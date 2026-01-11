@@ -31,3 +31,10 @@ build/
 
 ### VS Code ###
 .vscode/
+
+# Maven / Gradle
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
