@@ -1,10 +1,10 @@
 package ru.kata.spring.boot_security.demo.service;
 
-import ru.kata.spring.boot_security.demo.dao.UserDao;
-import ru.kata.spring.boot_security.demo.models.User;
-
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.kata.spring.boot_security.demo.dao.UserDao;
+import ru.kata.spring.boot_security.demo.models.User;
 
 import java.util.List;
 import java.util.Optional;
@@ -14,11 +14,12 @@ import java.util.Optional;
 public class UserServiceImpl implements UserService {
 
     private final UserDao userDao;
+    private final PasswordEncoder passwordEncoder;
 
-    public UserServiceImpl(UserDao userDao) {
+    public UserServiceImpl(UserDao userDao, PasswordEncoder passwordEncoder) {
         this.userDao = userDao;
+        this.passwordEncoder = passwordEncoder;
     }
-
 
     @Override
     @Transactional(readOnly = true)
@@ -33,19 +34,32 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    @Transactional
     public void create(User user) {
+        if (user.getPassword() == null || user.getPassword().isBlank()) {
+            throw new IllegalArgumentException("Password is required");
+        }
+
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
         userDao.save(user);
     }
 
     @Override
-    @Transactional
     public void update(User user) {
+        User old = userDao.findById(user.getId());
+        if (old == null) {
+            throw new IllegalArgumentException("User not found: id=" + user.getId());
+        }
+
+        if (user.getPassword() == null || user.getPassword().isBlank()) {
+            user.setPassword(old.getPassword());
+        } else {
+            user.setPassword(passwordEncoder.encode(user.getPassword()));
+        }
+
         userDao.update(user);
     }
 
     @Override
-    @Transactional
     public void delete(Long id) {
         userDao.deleteById(id);
     }

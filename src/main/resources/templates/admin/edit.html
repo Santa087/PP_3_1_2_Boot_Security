@@ -11,9 +11,13 @@
     <button type="submit">Logout</button>
 </form>
 
-
 <form th:method="POST" th:action="@{/admin/update}" th:object="${user}">
     <input type="hidden" th:field="*{id}"/>
+
+    <label for="username">Username:</label>
+    <input type="text" th:field="*{username}" id="username"/>
+    <br/>
+
 
     <label for="name">Name:</label>
     <input type="text" th:field="*{name}" id="name"/>
@@ -23,6 +27,24 @@
     <input type="text" th:field="*{surname}" id="surname"/>
     <br/>
 
+    <label for="password">New password (leave empty to keep current):</label>
+    <input type="password" th:field="*{password}" id="password"/>
+    <br/>
+
+    <div>
+        <p>Roles:</p>
+        <div th:each="r : ${allRoles}">
+            <label>
+                <input type="checkbox"
+                       name="roleIds"
+                       th:value="${r.id}"
+                       th:checked="${user.roles.contains(r)}">
+                <span th:text="${r.name}"></span>
+            </label>
+        </div>
+    </div>
+
+    <br/>
     <input type="submit" value="Update">
 </form>
 
