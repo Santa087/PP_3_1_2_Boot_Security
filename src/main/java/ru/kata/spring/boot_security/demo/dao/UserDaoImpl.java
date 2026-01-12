@@ -16,8 +16,11 @@ public class UserDaoImpl implements UserDao {
 
     @Override
     public List<User> findAll() {
-        return entityManager.createQuery("from User", User.class).getResultList();
+        return entityManager.createQuery(
+                "select distinct u from User u left join fetch u.roles", User.class
+        ).getResultList();
     }
+
 
     @Override
     public User findById(Long id) {
@@ -42,14 +45,16 @@ public class UserDaoImpl implements UserDao {
 
     @Override
     public Optional<User> findByUsername(String username) {
-        List<User> users = entityManager.createQuery(
-                        "select u from User u join fetch u.roles where u.username = :username", User.class)
+        return entityManager.createQuery(
+                        "select distinct u from User u left join fetch u.roles where u.username = :username",
+                        User.class
+                )
                 .setParameter("username", username)
-                .setMaxResults(1)
-                .getResultList();
-
-        return users.stream().findFirst();
+                .getResultList()
+                .stream()
+                .findFirst();
     }
+
 
 
 }

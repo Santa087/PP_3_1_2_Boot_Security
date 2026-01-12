@@ -1,56 +1,54 @@
 package ru.kata.spring.boot_security.demo.util;
 
 import org.springframework.boot.CommandLineRunner;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import ru.kata.spring.boot_security.demo.models.Role;
 import ru.kata.spring.boot_security.demo.models.User;
+import ru.kata.spring.boot_security.demo.service.RoleService;
 import ru.kata.spring.boot_security.demo.service.UserService;
-import ru.kata.spring.boot_security.demo.dao.RoleDao;
 
-import java.util.Set;
+import java.util.List;
 
 @Component
 public class DataInitializer implements CommandLineRunner {
 
-    private final RoleDao roleDao;
+    private final RoleService roleService;
     private final UserService userService;
-    private final PasswordEncoder passwordEncoder;
 
-    public DataInitializer(RoleDao roleDao, UserService userService, PasswordEncoder passwordEncoder) {
-        this.roleDao = roleDao;
+    public DataInitializer(RoleService roleService, UserService userService) {
+        this.roleService = roleService;
         this.userService = userService;
-        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
     public void run(String... args) {
-        Role adminRole = roleDao.findByName("ROLE_ADMIN").orElseGet(() -> roleDao.save(new Role("ROLE_ADMIN")));
-        Role userRole  = roleDao.findByName("ROLE_USER").orElseGet(() -> roleDao.save(new Role("ROLE_USER")));
+        Role adminRole = roleService.findByName("ROLE_ADMIN")
+                .orElseGet(() -> roleService.save(new Role("ROLE_ADMIN")));
 
-        // admin
+        Role userRole = roleService.findByName("ROLE_USER")
+                .orElseGet(() -> roleService.save(new Role("ROLE_USER")));
+
         userService.findByUsername("admin").orElseGet(() -> {
             User admin = new User();
             admin.setUsername("admin");
-            admin.setPassword(passwordEncoder.encode("admin"));
+            admin.setPassword("admin"); // НЕ кодируем тут
             admin.setName("Admin");
             admin.setSurname("Root");
             admin.setAge(30);
-            admin.setRoles(Set.of(adminRole, userRole)); // можно обе роли
-            userService.create(admin);
+
+            userService.create(admin, List.of(adminRole.getId(), userRole.getId()));
             return admin;
         });
 
-        // user
         userService.findByUsername("user").orElseGet(() -> {
             User user = new User();
             user.setUsername("user");
-            user.setPassword(passwordEncoder.encode("user"));
+            user.setPassword("user"); // НЕ кодируем тут
             user.setName("User");
             user.setSurname("Simple");
             user.setAge(25);
-            user.setRoles(Set.of(userRole));
-            userService.create(user);
+
+            userService.create(user, List.of(userRole.getId()));
             return user;
         });
     }

@@ -7,7 +7,6 @@ import ru.kata.spring.boot_security.demo.models.User;
 import ru.kata.spring.boot_security.demo.service.RoleService;
 import ru.kata.spring.boot_security.demo.service.UserService;
 
-import java.util.HashSet;
 import java.util.List;
 
 @Controller
@@ -38,8 +37,7 @@ public class UsersController {
     public String create(@ModelAttribute("user") User user,
                          @RequestParam(value = "roleIds", required = false) List<Long> roleIds) {
 
-        user.setRoles(roleIds == null ? new HashSet<>() : new HashSet<>(roleService.findAllById(roleIds)));
-        userService.create(user);
+        userService.create(user, roleIds);
         return "redirect:/admin";
     }
 
@@ -54,8 +52,7 @@ public class UsersController {
     public String update(@ModelAttribute("user") User user,
                          @RequestParam(value = "roleIds", required = false) List<Long> roleIds) {
 
-        user.setRoles(roleIds == null ? new HashSet<>() : new HashSet<>(roleService.findAllById(roleIds)));
-        userService.update(user);
+        userService.update(user, roleIds);
         return "redirect:/admin";
     }
 
